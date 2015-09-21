@@ -1,5 +1,5 @@
 {
-  "name": "md2react",
+  "name": "@pirosikick/md2react",
   "version": "0.8.8",
   "description": "markdown to react element",
   "main": "lib/index.js",
