@@ -60,13 +60,11 @@ getPropsFromHTMLNode = (node, attrWhitelist) ->
 # Override by option
 sanitize = null
 highlight = null
-compile = (node, defs, parentKey='_start', tableAlign = null, customComponents = {}) ->
+compile = (node, defs, parentKey='_start', tableAlign = null) ->
   key = parentKey+'_'+node.type
 
-  if typeof customComponents[node.type] is 'function'
-    customComponents[node.type] node, defs, key, tableAlign
-  else if defaultComponents[node.type]
-    defaultComponents[node.type] node, defs, key, tableAlign
+  if typeof components[node.type] is 'function'
+    components[node.type] node, defs, key, tableAlign
   else
     throw node.type + ' is unsuppoted node type. report to https://github.com/mizchi/md2react/issues'
 
@@ -221,16 +219,16 @@ defaultComponents =
 
 htmlWrapperComponent = null
 rawValueWrapper = null
-customComponents = null
+components = null
 module.exports = (raw, options = {}) ->
   sanitize = options.sanitize ? true
   htmlWrapperComponent = options.htmlWrapperComponent ? defaultHTMLWrapperComponent
   rawValueWrapper = options.rawValueWrapper ? (text) -> text
-  customComponents =
-    if typeof options.customComponents is 'object'
-      options.customComponents
-    else
-      {}
+
+  customComponents = options.customComponents ? {}
+  components = {}
+  for nodeType of defaultComponents
+    components[nodeType] = customComponents[nodeType] ? defaultComponents[nodeType]
 
   highlight = options.highlight ? (code, lang, key) ->
     $ 'pre', {key, className: 'code'}, [
@@ -239,4 +237,4 @@ module.exports = (raw, options = {}) ->
   ast = mdast.parse raw, options
   [ast, defs] = preprocess(ast, raw, options)
   ast = options.preprocessAST?(ast) ? ast
-  compile(ast, defs, null, null, customComponents)
+  compile(ast, defs, null, null)
